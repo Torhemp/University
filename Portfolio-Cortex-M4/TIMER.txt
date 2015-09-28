@@ -1,0 +1,135 @@
+#include <stdio.h>
+
+/*---------------------------------------------------
+
+    * clock *
+	 FCLK == cpu에 사용되는 클럭
+	 HCLK == AHB에 사용되는 클럭 (SYSCLK / n)
+	 PCLK == APB에 사용되는 클럭(AHB / n)
+	 SYSCLK == 장치마다 기준이 다르며
+	 크게 HSI, HSE, PLL이 기준이 됨
+	 
+	  * STM407VG 기준 *
+	 HSI clock = 16Mhz(기본)
+	 HSE clock = 4~26Mhz(기판 기준 8Mhz)
+
+   ---------------------------------------------------*/
+
+//GPIOx start address == GPIOx Mode address
+//TIM3 start address == TIM3 control register address
+//RCC start address == RCC clock control address
+//NVIC start address == NVIC_ISER0 address
+//PWR start address== PWR_CR address
+
+//PWR
+#define PWR_CR 0x40007000
+
+//RCC
+#define RCC_CR 0x40023800
+#define RCC_PLLCFGR 0x40023804
+#define RCC_CFGR 0x40023808
+#define RCC_CIR 0x4002380C
+#define RCC_AHB1ENR 0x40023830
+#define RCC_APB1ENR 0x40023840
+
+//LED control(GPIO D)
+#define GPIOD_MODE 0x40020C00
+#define GPIOD_ODR 0x40020C14
+#define GPIOD_BSRR 0x40020C18
+
+//Interrupt control
+#define NVIC_ISER0 0xE000E100
+#define NVIC_IPR0 0xE000E400
+#define NVIC_IPR7 0xE000E41C
+
+//TIM3
+#define TIM3_CR1 0x40000400
+#define TIM3_DIER 0x4000040C
+#define TIM3_SR 0x40000410
+#define TIM3_EGR 0x40000414
+#define TIM3_PSC 0x40000428
+#define TIM3_ARR 0x4000042C
+
+//Private Function
+void TIM3_IRQHandler(void);
+void TIM3_Callback(void);
+
+int i=0;
+int main(void){
+	//GPIO D clock enabled
+	(*(volatile unsigned *)RCC_AHB1ENR) |= 0x8;
+	//GPIO D mode set
+	(*(volatile unsigned *)GPIOD_MODE) |= 0x55000000;
+	//TIM3 clock enabled
+	(*(volatile unsigned *)RCC_APB1ENR) |= 0x2;
+	//TIM3 priority set
+	(*(volatile unsigned *)NVIC_IPR7) |= 0x40;
+	//TIM3 interrupt on
+	(*(volatile unsigned *)NVIC_ISER0) |= 0x20000000;
+	//TIM3 configuration set(period, prescaler)
+	/* -----------------------------------------------------------------------
+      TIM3CLK = SYSCLK(16MHZ)
+      Prescaler = (TIM3CLK / TIM3 counter clock) - 1
+	    f(Time update) = TIMxCLK / ((Prescaler + 1) * (Period +1))
+  ----------------------------------------------------------------------- */
+	//Prescaler
+	(*(volatile unsigned *)TIM3_PSC) = 3200 - 1;
+	//Period
+	(*(volatile unsigned *)TIM3_ARR) = 10000 - 1;
+	//TIM3 init
+	(*(volatile unsigned *)TIM3_EGR) |= 0x1;
+	//TIM3 update interrupt on
+	(*(volatile unsigned *)TIM3_DIER) |= 0x1;
+	//TIM3 counter on
+	(*(volatile unsigned *)TIM3_CR1) |= 0x1;
+	
+	while(1){
+	}
+}
+
+void TIM3_IRQHandler(void){
+	if(((*(volatile unsigned *)TIM3_SR) & 0x0001) != 0){
+		if(((*(volatile unsigned *)TIM3_DIER) & 0x0001) != 0){
+			 (*(volatile unsigned *)TIM3_SR) &= ~0x0001;
+		//	(*(volatile unsigned *)GPIOD_ODR) |= 0x1000<<1;
+			 TIM3_Callback();
+		}
+	}
+}
+
+void TIM3_Callback(void)
+	{
+		if(i==0)
+		{
+			(*(volatile unsigned *)GPIOD_ODR) |= 0x1000;
+			(*(volatile unsigned *)GPIOD_ODR) &=~ 0x8000;
+		}
+		else if(i==1)
+		{
+			(*(volatile unsigned *)GPIOD_ODR) |= 0x2000;
+			(*(volatile unsigned *)GPIOD_ODR) &=~ 0x1000;
+		}
+		else if(i==2)
+		{
+			(*(volatile unsigned *)GPIOD_ODR) |= 0x4000;
+			(*(volatile unsigned *)GPIOD_ODR) &=~ 0x2000;
+		}
+		else if(i==3)
+		{
+			(*(volatile unsigned *)GPIOD_ODR) |= 0x8000;
+			(*(volatile unsigned *)GPIOD_ODR) &=~ 0x4000;
+		}
+		/*else if(i==4)
+		{
+			(*(volatile unsigned *)GPIOD_ODR) ^= 0x1000;
+			(*(volatile unsigned *)GPIOD_ODR) ^= 0x8000;
+		}*/
+			
+	i++;
+				
+	if(i>3)
+	{
+		i=0;
+	}
+		
+}

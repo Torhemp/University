@@ -1,0 +1,15 @@
+#include <stdio.h>
+
+int main(void){
+
+	//GPIO D Clock Enabled
+	(*(unsigned int *)0x40023830) |= 0x8;
+	
+	//GPIO mode set
+	(*(unsigned int *)0x40020C00) |= 0x10000000;
+	
+	//GPIO D LED RED set
+	(*(unsigned int *)0x40020C18) |= 0x4000;
+	
+	return 0;
+}

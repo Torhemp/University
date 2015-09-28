@@ -1,0 +1,69 @@
+#include <stdio.h>
+
+//GPIOx start address == GPIOx Mode address
+//EXTI start address == EXTI Interrupt Mask address
+//RCC start address == RCC clock control address
+//NVIC start address == NVIC_ISER0 address
+
+//RCC
+#define RCC_CR 0x40023800
+#define RCC_AHB1ENR 0x40023830
+#define RCC_APB2ENR 0x40023844
+
+//Button control
+#define GPIOA_MODE 0x40020000
+#define USER_BUTTON 0
+
+//LED control
+#define GPIOD_MODE 0x40020C00
+#define GPIOD_ODR 0x40020C14
+#define GPIOD_BSRR 0x40020C18
+
+//Interrupt control
+#define EXTI_IMR 0x40013C00
+#define EXTI_FTSR 0x40013C0C
+#define EXTI_PR 0x40013C14
+#define SYSCFG 0x40013800
+#define SYSCFG_EXTICR 0x40013808
+#define NVIC_ISER 0xE000E100
+#define NVIC_IPR 0xE000E400
+#define NVIC_IPR6 0xE000E404
+#define VTOR 0xE000ED08
+
+//Private Function
+void GPIO_IRQHandle(void);
+void EXTI0_IRQHandler(void);
+void EXTI_Callback(void);
+
+int main(void){
+	//GPIO A, D clock enabled
+	(*(volatile unsigned *)RCC_AHB1ENR) |= 0x9;
+	//GPIO A, D mode set
+	(*(volatile unsigned *)GPIOA_MODE) |= 0x0;
+	(*(volatile unsigned *)GPIOD_MODE) |= 0x55000000;
+	//Interrupt mask on
+	(*(volatile unsigned *)EXTI_IMR) |= 0x1;
+	//Falling trigger on
+	(*(volatile unsigned *)EXTI_FTSR) |= 0x1;
+	//Priority set
+	(*(volatile unsigned *)NVIC_IPR6) |= 0x200;
+	//Interrupt on
+	(*(volatile unsigned *)NVIC_ISER) |= 0x40;
+	while(1){
+	}
+}
+
+void GPIO_IRQHandle(void){
+	if(((*(volatile unsigned *)EXTI_PR) & 0x1)!=0x0){
+		(*(volatile unsigned *)EXTI_PR) |= 0x0;
+		EXTI_Callback();
+	}
+}
+
+void EXTI0_IRQHandler(void){
+	GPIO_IRQHandle();
+}
+
+void EXTI_Callback(void){
+	(*(volatile unsigned *)GPIOD_ODR) ^= 0xF000;
+}

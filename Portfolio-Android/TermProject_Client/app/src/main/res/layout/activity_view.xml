@@ -1,0 +1,23 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context="com.example.eom.termproject_client.ViewActivity"
+    android:orientation="vertical" android:background="#000000">
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="460dp"
+        android:dividerHeight="2dp"
+        android:divider="#ffffff"
+        android:id="@+id/myList">
+    </ListView>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bookmarkButton"
+        android:background="#FFFFFF"
+        android:textColor="#000000"
+        android:text="@string/bookmark"
+        android:layout_gravity="center"
+        android:onClick="btnBMClick"/>
+
+</LinearLayout>

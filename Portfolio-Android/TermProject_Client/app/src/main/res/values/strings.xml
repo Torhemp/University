@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">텀프로젝트</string>
+    <string name="action_settings">settings</string>
+    <string name="title_activity_capture">사진촬영</string>
+    <string name="pCapture">사진촬영</string>
+    <string name="pViewer">사진보기</string>
+    <string name="pDelete">사진삭제</string>
+    <string name="setting">설정</string>
+    <string name="capture">촬영</string>
+    <string name="send">전송</string>
+    <string name="title_activity_setting">설정</string>
+    <string name="check">확인</string>
+    <string name="cancel">취소</string>
+    <string name="title_activity_view">사진보기</string>
+    <string name="textViewP">촬영자 : </string>
+    <string name="textViewC">카피문구 : </string>
+    <string name="textViewD">일시 : </string>
+    <string name="title_activity_view_activity2">상세보기</string>
+    <string name="bookmark">즐겨찾기</string>
+    <string name="title_activity_bookmark">즐겨찾기</string>
+    <string name="title_activity_view_activity3">상세보기</string>
+    <string name="title_activity_delete">사진삭제</string>
+</resources>

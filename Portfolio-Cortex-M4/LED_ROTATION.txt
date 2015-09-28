@@ -1,0 +1,56 @@
+#define RCC 0x40023800
+#define RCC_CFGR 0x40023808
+#define RCC_AHB1ENR 0x40023830
+#define HSICLK 16
+#define GPIOD_MODE 0x40020C00
+#define GPIOD_BSRR 0x40020C18
+#define LED_G 12
+#define LED_O 13
+#define LED_R 14
+#define LED_B 15
+
+void delay_int_cnt(volatile unsigned int t){
+	for(;t>0;t--);
+}
+
+void delay_one_second(void){
+	delay_int_cnt(1613192);
+}
+
+int main(void)
+{
+	int set, reset;
+	
+	//sys_clk HSI set
+	(*(volatile unsigned *)RCC_CFGR) |= 0x0;
+	//GPIO D clock enabled
+	(*(volatile unsigned *)RCC_AHB1ENR) |= 0x8;
+	//GPIO D 12~ 15 mode output set
+	(*(volatile unsigned *)GPIOD_MODE) |= 0x1000000;
+	(*(volatile unsigned *)GPIOD_MODE) |= 0x4000000;
+	(*(volatile unsigned *)GPIOD_MODE) |= 0x10000000;
+	(*(volatile unsigned *)GPIOD_MODE) |= 0x40000000;
+	
+	set = LED_G;
+	reset = set + 16;
+	
+	//LED rotation
+	while(1){
+		//reset disabled
+		(*(volatile unsigned *)GPIOD_BSRR) |= (0x0 <<  reset);
+		//set enabled
+		(*(volatile unsigned *)GPIOD_BSRR) |= (0x1 <<  set);
+		//delay 1000ms
+		delay_one_second();
+		//set disabled
+		(*(volatile unsigned *)GPIOD_BSRR) |= (0x0 <<  set);
+		//reset enabled
+		(*(volatile unsigned *)GPIOD_BSRR) |= (0x1 <<  reset);
+		set++;
+		if(set>LED_B){
+			set = LED_G;
+		}
+		reset = set + 16;
+	}
+
+}
